@@ -111,6 +111,32 @@ impl ClipboardProvider for AndroidClipboardContext {
     }
 
     fn clear(&mut self) -> Result<()> {
-        todo!()
+        let ctx = ndk_glue::native_activity();
+
+        let vm = unsafe { jni::JavaVM::from_raw(ctx.vm().cast()) }?;
+        let env = vm.attach_current_thread()?;
+        let class_ctxt = env.find_class("android/content/Context")?;
+        let cb = env.get_static_field(class_ctxt, "CLIPBOARD_SERVICE", "Ljava/lang/String;")?;
+        let cb_manager = env
+            .call_method(
+                ctx.activity(),
+                "getSystemService",
+                "(Ljava/lang/String;)Ljava/lang/Object;",
+                &[cb],
+            )?
+            .l()?;
+
+        env.call_method(
+            cb_manager,
+            "setPrimaryClip",
+            "(Landroid/content/ClipData;)V",
+            &[env
+                .new_object("android/content/ClipData", "()V", &[])
+                .unwrap()
+                .into()],
+        )?
+        .v()?;
+
+        Ok(())
     }
 }
