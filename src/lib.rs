@@ -100,6 +100,11 @@ pub mod windows_clipboard;
 #[cfg(target_os = "macos")]
 pub mod macos_clipboard;
 
+#[cfg(target_os = "android")]
+extern crate jni;
+#[cfg(target_os = "android")]
+pub mod android_clipboard;
+
 #[cfg(all(
     unix,
     not(any(target_os = "macos", target_os = "android", target_os = "emscripten"))
@@ -111,6 +116,9 @@ pub type ClipboardContext = windows_clipboard::WindowsClipboardContext;
 
 #[cfg(target_os = "macos")]
 pub type ClipboardContext = macos_clipboard::MacOSClipboardContext;
+
+#[cfg(target_os = "android")]
+pub type ClipboardContext = android_clipboard::AndroidClipboardContext;
 
 /// Get the current clipboard contents
 ///
